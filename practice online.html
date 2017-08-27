@@ -35,13 +35,9 @@ TO DO
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	<script type="text/javascript" src="https://static.filestackapi.com/v3/filestack.js"></script>
   
-	<script>
-		var fileSrcArray = ["1_1_мошенник.wav", "1_2_мажор.wav"]; /* массив адресов файлов, стоит брать его из наружного файла */
-	</script>
+	<script type="text/javascript" src="experiment filenames list.js"></script>
 	
-	<script>
-		var fileTrainingSrcArray = ["1_1_мошенник.wav", "1_2_мажор.wav"]; /* массив адресов файлов, стоит брать его из наружного файла */
-	</script>
+	<script type="text/javascript" src="training filenames list.js"></script>
   
 	<script>
 "use strict"
@@ -70,6 +66,7 @@ TO DO
 			function getToTheNextWord(){ /* перейти к следующему слову */
 				if (training == false){ /* экспериментальные задания */
 					if (wordsSolvedCounter < fileSrcArray.length){ /* если решено слов меньше длины списка слов */
+					//if (wordsSolvedCounter < 3){ /* если решено слов меньше длины списка слов */
 						wordsSolvedCounter += 1; /* прибавить 1 к числу решённых слов */
 						currentLength = 0.250 /* сбросить текущую длину проигрывания до начальной */
 						document.getElementById('sample').src = fileSrcArray[wordsSolvedCounter - 1]; /* положить в переменную audio следующий файл из спика адресов файлов */
@@ -77,7 +74,7 @@ TO DO
 						rightAnswer = source.match( /_\d+_(.*)\./i )[1].toLowerCase(); /* положить эту текстовую переменную в правильный ответ */
 					} else { /* если решено слов столько же или больше длины списка слов */
 						document.getElementById('wordInputDiv').style="display: none"; /* скрыть инпут слов */
-						$("#wordInputDiv").hide();
+						$("#instructionPage").hide();
 						$('#text').html("Эксперимент окончен, спасибо за участие! Пожалуйста, не рассказывайте никому о содержании эксперимента до его завершения."); /* изменить текст */
 						$('#playButton').hide(); /* скрыть кнопку Play */
 						var i, j, textLine
@@ -112,7 +109,6 @@ TO DO
 			$("#verbForm").on("submit", function() { /* обработать введённое пользователем слово */
 				if (event.preventDefault) event.preventDefault(); /* не переходить на новую страницу (отключить обработчик по умолчанию) */
 				var currentInput = document.getElementById('input').value.toLowerCase(); /* положить в переменную текущий инпут */ 
-				console.log(inputArray)
 				if (currentInput == rightAnswer) { /* если верный ответ */
 					inputArray.push([userData.userName, rightAnswer, currentLength, currentInput, "true"]); /* сложить значения в массив ответов */
 					document.getElementById('text').innerText = "Вы ввели верное слово. Для проигрывания следующего слова нажмите на Play."; /* изменить текст */
@@ -149,8 +145,7 @@ TO DO
 				firstRun = false; /* изменить значение на "проигрывается не первое слово" */
 				audio.addEventListener("ended", function(){ /* когда аудио заканчивается */
 					audioFinished = true; /* аудио закончилось */
-					console.log('finished');
-					document.getElementById('text').innerText = "Слово проиграно до конца. Нажмите на Play для проигрывания следуюущего слова." /* изменить текст */
+					document.getElementById('text').innerText = "Слово проиграно до конца." /* изменить текст */
 					getToTheNextWord();
 				});
 			});
@@ -396,7 +391,7 @@ TO DO
 
 	<div id="consentPage" style="display: none"> <!-- страница с формой информированного согласия -->
 		<div id="consentText">
-			Тренировка окончена. Пожалуйста, заполните форму согласия на участие в эксперименте: <br>
+			Тренировка окончена. Пожалуйста, прочтите заявление об информированном согласии на участие в эксперименте: <br>
 		
 			Я заявляю о добровольном участии в лингвистическом исследовании «Исследование скорости узнавания предъявляемых на слух слов», проводимом лабораторией нейролингвистики НИУ «Высшая школа экономики». Я согласен с тем, что данные, полученные от меня в ходе исследования (личные данные, результаты теста), могут быть опубликованы и использованы в научных целях при условии, что моё имя останется в тайне. <br>
 
