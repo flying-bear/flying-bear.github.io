@@ -61,8 +61,7 @@
 			function getToTheNextWord(){ /* перейти к следующему слову */
 			    audioFinished = false;
 				if (training == false){ /* экспериментальные задания */
-					//if (wordsSolvedCounter < fileSrcArray.length){ /* если решено слов меньше длины списка слов */
-					if (wordsSolvedCounter < 4){ /* если решено слов меньше длины списка слов */
+					if (wordsSolvedCounter < fileSrcArray.length){ /* если решено слов меньше длины списка слов */
 						wordsSolvedCounter += 1; /* прибавить 1 к числу решённых слов */
 						currentLength = 0.250 /* сбросить текущую длину проигрывания до начальной */
 						document.getElementById('sample').src = fileSrcArray[wordsSolvedCounter - 1]; /* положить в переменную audio следующий файл из спика адресов файлов */
