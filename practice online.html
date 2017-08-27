@@ -1,23 +1,4 @@
 <!doctype html>
-<!-- 
-TO DO
-	add moving between pages
-	check instruction
-	check fileText
-	check training (to verify that they got the instruction right) 
-	upload data from somewhere: src <script> var fileSrcArray = ["1_1_мошенник.wav", "1_2_мажор.wav"]; /* массив адресов файлов, стоит брать его из наружного файла */</script>
-	download data somewhere: 
-		<script>
-			var blob = new Blob([JSON.stringify([0,1,2])], {type : 'application/json'});
-			var fileOfBlob = new File([blob], 'aFileName.json');
-			form.append("upload", fileOfBlob);
-		</script>
-		<script>
-		  var client = filestack.init('A7iAeWAkkSZ67VSjAJPuZz', { policy: 'policy', signature: 'gmryazanskaya' });
-		  client.upload(file);
-		</script>
-	add design
--->
 
 <html lang="en, ru">
 <head>
@@ -43,7 +24,8 @@ TO DO
 "use strict"
 		var currentLength = 0.250; /* до какого момента пригрывать запись - изначально 250ms */
 		var inputArray = []; /* сюда складываются массивы ответов и данных о них */
-		var firstRun = true; /* первое ли слово проигрывается */
+		var firstTrainingRun = true; /* первое ли слово проигрывается */
+		var firstExperimentRun = true;
 		var audioFinished = false; /* проиграно ли слово до конца */
 		var wordsSolvedCounter = 0; /* количество решённых слов */
 		var audio;
@@ -57,16 +39,30 @@ TO DO
 
 		$(function(){
 			audio = document.getElementById('sample'); /* текущее слово (аудио) */
+			var trainingFunctionAudioFinished = function(){ /* когда аудио заканчивается */
+				audioFinished = true; /* аудио закончилось */
+					document.getElementById('trainingText').innerText = "Cлово проиграно до конца. Прочитайте инструкцию снова." /* изменить текст */
+					document.getElementById('trainingPage').style="display: none"; /* скрыть consentPage */
+					document.getElementById('instructionPage').style="display: block"; /* показать instructionPage */
+				};
+			var experimentFunctionAudioFinished = function(){ /* когда аудио заканчивается */
+					if (audioFinished) return;
+					audioFinished = true; /* аудио закончилось */
+					document.getElementById('text').innerText = "Слово проиграно до конца." /* изменить текст */
+					getToTheNextWord();
+					audio.play();
+				};
 			function createAndUploadCSVFile(text, name) {
 				var blob = new Blob([text], {type : 'text/csv'});
 				var client = filestack.init('A7iAeWAkkSZ67VSjAJPuZz', { policy: 'policy', signature: 'gmryazanskaya' });
 				client.upload(blob, {}, {filename: name});
-			}
+			};
 			
 			function getToTheNextWord(){ /* перейти к следующему слову */
+			    audioFinished = false;
 				if (training == false){ /* экспериментальные задания */
-					if (wordsSolvedCounter < fileSrcArray.length){ /* если решено слов меньше длины списка слов */
-					//if (wordsSolvedCounter < 3){ /* если решено слов меньше длины списка слов */
+					//if (wordsSolvedCounter < fileSrcArray.length){ /* если решено слов меньше длины списка слов */
+					if (wordsSolvedCounter < 4){ /* если решено слов меньше длины списка слов */
 						wordsSolvedCounter += 1; /* прибавить 1 к числу решённых слов */
 						currentLength = 0.250 /* сбросить текущую длину проигрывания до начальной */
 						document.getElementById('sample').src = fileSrcArray[wordsSolvedCounter - 1]; /* положить в переменную audio следующий файл из спика адресов файлов */
@@ -74,14 +70,14 @@ TO DO
 						rightAnswer = source.match( /_\d+_(.*)\./i )[1].toLowerCase(); /* положить эту текстовую переменную в правильный ответ */
 					} else { /* если решено слов столько же или больше длины списка слов */
 						document.getElementById('wordInputDiv').style="display: none"; /* скрыть инпут слов */
-						$("#instructionPage").hide();
 						$('#text').html("Эксперимент окончен, спасибо за участие! Пожалуйста, не рассказывайте никому о содержании эксперимента до его завершения."); /* изменить текст */
 						$('#playButton').hide(); /* скрыть кнопку Play */
-						var i, j, textLine
-						for (i = 0; i < inputArray.length; i++) { /* создать текст из InputArray */
-							for (j = 0; j < inputArray[i].length; j++){
-								textLine = inputArray[i].join(";");
-							};
+						audio.removeEventListener("ended", experimentFunctionAudioFinished);
+						var i, j, textLine = "";
+						var convertedArray = [];
+						for(var i = 0; i < inputArray.length; i++){convertedArray.push(inputArray[i]);}
+						for (i = 0; i < convertedArray.length; i++) {
+							textLine = convertedArray[i].join(";");
 							fileText += textLine + "\n";
 						};
 						var userDataCsv=""; $.each(userData, function(k,v) {userDataCsv+=k+":"+v+"; \n";});
@@ -99,6 +95,7 @@ TO DO
 						$('#trainingPage').hide(); /* скрыть trainingPage */
 						document.getElementById('consentPage').style="display: block"; /* скрыть кнопку Play */
 						training = false;
+						audio.removeEventListener("ended", trainingFunctionAudioFinished);
 						wordsSolvedCounter = 0; /* сбросить число решённых слов */
 					};
 				
@@ -122,7 +119,7 @@ TO DO
 					};
 				};
 				document.getElementById('input').value = "" /* стереть значение инпута */
-				$("#playButton").click();
+				if (wordsSolvedCounter < fileSrcArray.length) $("#playButton").click();
 				return false;
 			});
 
@@ -139,15 +136,11 @@ TO DO
 				if (event.preventDefault) event.preventDefault(); /* не переходить на новую страницу (отключить обработчик по умолчанию) */
 				audio.currentTime = 0.0; /* начать проигрываеть слово с начала */
 				audio.play(); /* проиграть слово */
-				if(firstRun == true){ /* если проигрывается первое слово */
+				if(firstExperimentRun == true){ /* если проигрывается первое слово */
 					document.getElementById('text').innerText = "Введите слово. Если вы не знаете слова, нажмите на Play." /* изменить текст */
+					audio.addEventListener("ended", experimentFunctionAudioFinished);
 				};
-				firstRun = false; /* изменить значение на "проигрывается не первое слово" */
-				audio.addEventListener("ended", function(){ /* когда аудио заканчивается */
-					audioFinished = true; /* аудио закончилось */
-					document.getElementById('text').innerText = "Слово проиграно до конца." /* изменить текст */
-					getToTheNextWord();
-				});
+				firstExperimentRun = false; /* изменить значение на "проигрывается не первое слово" */
 			});
 			
 			
@@ -165,7 +158,7 @@ TO DO
 					};
 				};
 				document.getElementById('trainingInput').value = "" /* стереть значение инпута */
-				$("#trainingButton").click();
+				if (training) $("#trainingButton").click();
 				return false;
 			});
 			
@@ -174,17 +167,11 @@ TO DO
 				if (event.preventDefault) event.preventDefault(); /* не переходить на новую страницу (отключить обработчик по умолчанию) */
 				audio.currentTime = 0.0; /* начать проигрываеть слово с начала */
 				audio.play(); /* проиграть слово */
-				if(firstRun == true){ /* если проигрывается первое слово */
+				if(firstTrainingRun == true){ /* если проигрывается первое слово */
 					document.getElementById('trainingText').innerText = "Введите слово. Если вы не знаете слова, нажмите на Play." /* изменить текст */
+					audio.addEventListener("ended", trainingFunctionAudioFinished);
 				};
-				firstRun = false; /* изменить значение на "проигрывается не первое слово" */
-				audio.addEventListener("ended", function(){ /* когда аудио заканчивается */
-					audioFinished = true; /* аудио закончилось */
-						document.getElementById('trainingText').innerText = "Cлово проиграно до конца. Прочитайте инструкцию снова." /* изменить текст */
-						document.getElementById('trainingPage').style="display: none"; /* скрыть consentPage */
-						document.getElementById('instructionPage').style="display: block"; /* показать instructionPage */
-					}
-				);
+				firstTrainingRun = false; /* изменить значение на "проигрывается не первое слово" */
 			});
 			
 			
@@ -197,7 +184,6 @@ TO DO
 				}, {});
 				document.getElementById('inqueryPage').style="display: none"; /* скрыть inqueryPage */
 				document.getElementById('instructionPage').style="display: block"; /* показать instructionPage */
-				console.log(userData)
 			});
 			
 			
@@ -363,10 +349,10 @@ TO DO
 </div>
 
 	<div id="instructionPage" style="display: none"> <!-- страница с инструкцией --> <!-- проверить инструкции -->
-		Пожалуйста, внимательно прочитайте инструкцию. <br>
+		<h1>Пожалуйста, внимательно прочитайте инструкцию.</h1> <br>
 		В эксперименте Вам по нажатию на Play будут предъявляться на слух части слов. Если вам кажется что вы знаете проигрываемое слово - вы должны напечатать его на экране. Если не знаете - нажать Play, в этом случае повторно будет проиграна уже бОльшая часть слова. <br> 
 		Когда слово проиграно полностью (если до этого вы его не угадали) - вы обязаны вписать ту догадку, которая у вас есть. <br>
-		Среди предъявляемых слов могут быть слова во множественном числе и жаргонные слова. Все слова - существительные, одушевленные. Ваша задача - угадать звучащее слово, которое является продолжением для "Там был(-а,-о) ... / Я заметил(а)...". <br>
+		Среди предъявляемых слов могут быть слова во множественном числе, не в именительном падеже и жаргонные слова. Все слова - существительные. Ваша задача - угадать звучащее слово, которое является продолжением для "Там был(-а,-о) ... / Я заметил(а)...". <br>
 		Если вы не знаете слова, снова нажмите на Play. После того, как вы угадаете слово, по нажатию на Play, Вам будет предъявлено следующее слово. <br>
 		<form id="instructionForm">	
 			<button id="instructionCheck" type="submit">Я понял инструкцию</button> <!-- кнопочочка подтверждения понимания инструкции -->
