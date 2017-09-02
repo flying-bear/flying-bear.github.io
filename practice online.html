@@ -83,6 +83,7 @@
 					} else { /* если решено слов столько же или больше длины списка слов */
 						document.getElementById('wordInputDiv').style.cssText="display: none"; /* скрыть инпут слов */
 						$('#text').html("Эксперимент окончен, спасибо за участие! Пожалуйста, не рассказывайте никому о содержании эксперимента до его завершения."); /* изменить текст */
+						$('#wordsLeftCounterText').hide(); /* скрыть wordsLeftCounterText */
 						$('#playButton').hide(); /* скрыть кнопку Play */
 						audio.removeEventListener("ended", experimentFunctionAudioFinished);
 						var i, j, textLine = "";
