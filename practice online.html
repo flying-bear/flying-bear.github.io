@@ -150,6 +150,9 @@
 			$("#playButton").on("click", function(){
 				if (event.preventDefault) event.preventDefault(); /* не переходить на новую страницу (отключить обработчик по умолчанию) */
 				audio.currentTime = 0.0; /* начать проигрываеть слово с начала */
+				if (audioFinished == false){
+					currentLength += 0.050; /* прибавить 50ms */
+				};
 				audio.play(); /* проиграть слово */
 				if(firstExperimentRun == true){ /* если проигрывается первое слово */
 					document.getElementById('text').innerText = "Введите слово. Если вы не знаете слова, нажмите на Play." /* изменить текст */
@@ -181,6 +184,9 @@
 			$("#trainingButton").on("click", function(){
 				if (event.preventDefault) event.preventDefault(); /* не переходить на новую страницу (отключить обработчик по умолчанию) */
 				audio.currentTime = 0.0; /* начать проигрываеть слово с начала */
+				if (audioFinished == false){
+					currentLength += 0.050; /* прибавить 50ms */
+				};
 				audio.play(); /* проиграть слово */
 				if(firstTrainingRun == true){ /* если проигрывается первое слово */
 					document.getElementById('trainingText').innerText = "Введите слово. Если вы не знаете слова, нажмите на Play." /* изменить текст */
