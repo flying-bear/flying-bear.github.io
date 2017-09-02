@@ -62,6 +62,7 @@
 					document.getElementById('text').innerText = "Слово проиграно до конца."; /* изменить текст */
 					getToTheNextWord();
 					audio.play();
+					
 				};
 			function createAndUploadCSVFile(text, name) {
 				var blob = new Blob([text], {type : 'text/csv'});
@@ -150,10 +151,11 @@
 			$("#playButton").on("click", function(){
 				if (event.preventDefault) event.preventDefault(); /* не переходить на новую страницу (отключить обработчик по умолчанию) */
 				audio.currentTime = 0.0; /* начать проигрываеть слово с начала */
+				audio.play(); /* проиграть слово */
+				
 				if (audioFinished == false){
 					currentLength += 0.050; /* прибавить 50ms */
 				};
-				audio.play(); /* проиграть слово */
 				if(firstExperimentRun == true){ /* если проигрывается первое слово */
 					document.getElementById('text').innerText = "Введите слово. Если вы не знаете слова, нажмите на Play." /* изменить текст */
 					audio.addEventListener("ended", experimentFunctionAudioFinished);
@@ -184,10 +186,11 @@
 			$("#trainingButton").on("click", function(){
 				if (event.preventDefault) event.preventDefault(); /* не переходить на новую страницу (отключить обработчик по умолчанию) */
 				audio.currentTime = 0.0; /* начать проигрываеть слово с начала */
+				audio.play(); /* проиграть слово */
+				
 				if (audioFinished == false){
 					currentLength += 0.050; /* прибавить 50ms */
 				};
-				audio.play(); /* проиграть слово */
 				if(firstTrainingRun == true){ /* если проигрывается первое слово */
 					document.getElementById('trainingText').innerText = "Введите слово. Если вы не знаете слова, нажмите на Play." /* изменить текст */
 					audio.addEventListener("ended", trainingFunctionAudioFinished);
